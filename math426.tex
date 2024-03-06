@@ -1,0 +1,260 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{MATH426: Computational Mathematics | Lecture Notes}
+\author{Andrew Ngo}
+\date{}
+
+\usepackage{tikz,pgf}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage[margin=0.8in, headheight=0.1]{geometry}
+\usepackage{changepage}
+\usepackage{chngcntr}
+\graphicspath{ {./images/} }
+
+\begin{document}
+
+\newtheorem{lemma}{Lemma}
+\counterwithin*{lemma}{theorem}
+\newtheorem{theorem}{Theorem}
+\counterwithin*{theorem}{subsection}
+\newtheorem{definition}{Definition}
+\counterwithin*{definition}{theorem}
+\newtheorem{corollary}{Remark}
+\newtheorem{remark}{Remark}
+\counterwithin*{remark}{theorem}
+\newtheorem{example}{Example}
+\counterwithin*{example}{theorem}
+\newtheorem{question}{Question}
+%\newenvironment{myproof}{\begin{proof}\end{proof}}
+\newenvironment{solution}{%
+     \setlength\parindent{0pt}\par\medskip\textbf{Solution.}\quad}{%
+     \hfill\tiny$\blacksquare$\par\medskip}
+\newcommand\R{\mathbb{R}}
+\newcommand\norm[1]{\lVert#1\rVert}
+
+\maketitle
+
+\section{Computer Numbers}
+\section{(Square) Linear Systems of Equations}
+\subsection{LU Factorization for Solving $Ax=b$}
+Assume $A = [a_ij]_{i, j=1,n}$ is a $n \times n$ matrix with $det(A) \neq 0$.
+\definition{The matrix $A$ has a $LU$ factorization if there exist two $n \times n$ matrices $L$-lower triangular, $U$-upper triangular such that $A=LU$. Note that $det(A) = det(L)det(U) \neq 0$ and $det(L) = l_{11} l_{22} \dots l_{nn} \neq 0$ and $det(U) = u_{11} u_{22} \dots u_{nn} \neq 0$. In other words, all diagonal entries of $L$ and $U$ are nonzero.}
+\example[Solving $Ax=b$ using $A=LU$]{
+Assume that $A=LU$ is given and A is an invertible matrix ($det(A) \neq 0$).
+\begin{equation}
+    Ax=b \longleftrightarrow (LU)x = b \longleftrightarrow L(Ux) = b
+\end{equation}
+Denote $Ux=y$. Then,
+\begin{equation}
+    Ax=b \longleftrightarrow L(Ux)=b, y=Ux \longleftrightarrow Ly=b, Ux=y
+\end{equation}
+Solving for the solution $x \in \mathbb{R}^n$ reduces to two steps:
+\begin{enumerate}
+    \item Solve $Ly=b$ for y using Forward Solve.
+    \item Solve $Ux=y$ for x using Back Solve.
+\end{enumerate}
+}
+\remark{Solving $LU$ factorization is much faster because it involves less operations than Gaussian Elimination (GE). Operations for GE is $O(n^3)$. Operations for Back Solve is $O(n^2)$ and Forward Solve is $O(n^2)$, therefore operations for $LU$ factorization is $O(2n^2)=O(n^2)$.}
+\definition{We say that a $n \times n$ lower triangular matrix $L$ is unit lower triangular if $l_{11}=l_{22}=\dots=l_{nn}=1$.}
+\theorem{If $A$ is an invertible $n \times n$ matrix, then there are \textbf{unique} $L$-unit lower triangular and $U$-upper triangular matrices such that $A=LU$.}
+\newpage
+\subsubsection{Gaussian Elimination on $A$ produces $L$ and $U$ such that $A=LU$.}
+\example{Assume that $n=3$ and look for a factorization $A=LU$:
+\begin{equation}
+    A =
+    \begin{bmatrix}
+    a_{11} & a_{12} & a_{13}\\
+    a_{21} & a_{22} & a_{23}\\
+    a_{31} & a{32} & a_{33}
+    \end{bmatrix} =
+    \begin{bmatrix}
+    1 & 0 & 0\\
+    l_{21} & 1 & 0\\
+    l_{31} & l_{32} & 1
+    \end{bmatrix}
+    \begin{bmatrix}
+    u_{11} & u_{12} & u_{13}\\
+    0 & u_{22} & u_{23}\\
+    0 & 0 & u_{33}
+    \end{bmatrix}
+\end{equation}
+The multipliers computed in Gaussian Elimination for $A$ are exactly the entries under the main diagonal of $L$, while the upper triangular matrix $U$ is exactly the triangular matrix at the end of Gaussian Elimination.
+\subsubsection{Naive Algorithm for Gaussian Elimination}
+If $A$ is an invertible matrix, solve for $x$ in the linear system $Ax=b$. The inputs are $A$, an invertible $n \times n$ matrix, and $b$, an $n$-dimensional column vector $(b\in\R^n)$. The output is $x\in\R^n$, a column vector.
+\begin{align*}
+        \text{for } j=1:n-1 \\
+        \text{for } &k=j+1:n \\
+        &m=a_{kj} / a_{jj} \\
+        &A(k,j+1:n) = A(k,j+1:n) - m*A(j,j+1:n) \\
+        &b_k = b_k - m*b_j \\
+        end \\
+        end
+\end{align*}
+\subsubsection{Algorithm for Forward Solve}
+\subsubsection{Algorithm for Back Solve}
+\subsection{$PA=LU$ factorization for Solving $Ax=b$}
+This factorization involves Gaussian Elimination with partial pivoting. Dividing by small numbers leads to bad pivots and large errors for row operations, leading to numerical instability.
+\subsubsection{Permutation Matrices}
+\definition{A $n \times n$ matrix $P$ is a permutation matrix if $P$ is obtained from the identity matrix $I_n$ by swapping rows.
+Properties of permutation matrices are:
+\begin{enumerate}
+    \item Each row or column has exactly one nonzero entry, which is 1.
+    \item For each permutation matrix $P$, $P^{-1} = P^t$.
+    \item If $P=(R_i \longleftrightarrow R_j)(I_n)$, and $A$ is an $n \times n$ matrix, $PA$ swaps $R_i$ and $R_j$ of $A$.
+\end{enumerate}}
+\example{
+\begin{equation}
+P = 
+\begin{bmatrix}
+    1 & 0 & 0\\
+    0 & 0 & 1\\
+    0 & 1 & 0
+\end{bmatrix}
+= (R_2 \longleftrightarrow R_1)
+\begin{bmatrix}
+    1 & 0 & 0\\
+    0 & 1 & 0\\
+    0 & 0 & 1
+\end{bmatrix}
+\end{equation}
+}
+\example{
+\begin{equation}
+PA = 
+\begin{bmatrix}
+    1 & 0 & 0\\
+    0 & 0 & 1\\
+    0 & 1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+    1 & 2 & 3\\
+    4 & 5 & 6\\
+    7 & 8 & 9
+\end{bmatrix}
+=
+\begin{bmatrix}
+    1 & 2 & 3\\
+    7 & 8 & 9\\
+    4 & 5 & 6
+\end{bmatrix}
+\end{equation}
+}
+\theorem[$PA=LU$ Factorization Theorem]{If $A$ is an invertible $n \times n$ matrix and $P$ is a permutation matrix corresponding to pivoting in Gaussian Elimination, there are \textbf{unique} $L$-unit lower triangular and $U$-unit upper triangular matrices, and a permutation matrix $P$ such that $PA=LU$.}
+\example[Solving $Ax=b$ using $PA=LU$]{Assume that $PA=LU$ where $A$ is an invertible matrix and $P$ is a permutation matrix. Use LU factorization (with Gaussian elimination and the multiplier operations) to find $L$ and $U$ where $PA=LU$.
+\begin{equation}
+\begin{split}
+    Ax=b \\ \iff PAx=Pb \\ \iff (LU)x=Pb \\ \iff L(Ux)=Pb
+\end{split}
+\end{equation}
+Denote $Ux=y$. Then,
+\begin{equation}
+    Ax=b \iff L(Ux)=Pb, y=Ux \iff Ly=Pb, Ux=y
+\end{equation}
+To solve for $x\in\R^n$, solve $Ly=Pb$ for $y$ using Forward Solve and $Ux=y$ for $x$ using Back Solve.
+}
+\remark{If $P=I_n$, then we have the standard $A=LU$ factorization.}
+\subsection{Symmetric Positive Definite (SPD) Matrices}
+\definition{For a general square matrix $A=[a_{ij}]_{i,j={1,n}}$ (real entries) and $x=[x_1,x_2,\dots,x_n]\in\R^n$:
+    \begin{equation}
+        x^{T}Ax=\sum_{i=1}^n\sum_{j=1}^n{a_{ij}x_{i}x_{j}}
+    \end{equation}
+    is a quadratic form.
+    Also, $A$ is called symmetric positive definite if $A^{T} = A$ and $x^{T}Ax>0$, for all nonzero $x\in\R^n$.
+}
+\theorem{A symmetric matrix $A$ is positive definite (PD) if and only if all the eigenvalues are real and strictly positive.}
+\theorem[Sylvester Criterion of Positive Definiteness]{A symmetric matrix 
+\begin{equation}
+    A =
+    \begin{bmatrix}
+        a_{11} & a{12} & \dots & a_{1n}\\
+        \vdots & \vdots & \vdots & \vdots\\
+        a_{n1} & a_{n2} & \dots & a_{nn}
+    \end{bmatrix}
+\end{equation}
+is positive definite if and only if
+\begin{equation}
+    a_{11}>0, \begin{vmatrix}a_{11} & a_{12}\\a_{21} & a_{22}\end{vmatrix}>0, \dots, \begin{vmatrix}a_{11} & a_{12} & \dots & a_{1n}\\ \vdots & \vdots & \vdots & \vdots\\a_{n1} & a_{n2} & \dots & a_{nn}\end{vmatrix} > 0
+\end{equation}
+}
+\subsection{Cholesky Factorization of SPD Matrices}
+% NORMS
+\subsection{Vector and Matrix Norms}
+\definition{A norm on $V=\R^n$ is a function $||\cdot||$ from $\R^n$ with values in $\R$, satisfying
+\begin{enumerate}
+    \item $\norm{x} \geq 0$, for all $x \in V$.
+    \item $\norm{x} = 0$, if and only if $x=0$.
+    \item $\norm{\alpha x} = |\alpha|\norm{x}$, for all $x \in V$, and $\alpha\in\R$.
+    \item $\norm{x+y} \leq \norm{x} + norm{y}$, for all $x, y \in V$.
+\end{enumerate}}
+\definition{$\norm{x}$ is a distance from x to the zero vector \textbf{0}.}
+\definition{Assume $x=[x_1, x_2, \dots, x_n]^T \in V$. The important vector norms are
+\begin{align*}
+    \norm{x}_2 & = \sqrt{\sum_{k=1}^n{{x_k}^2}}\\
+    \norm{x}_1  & = \sum_{k=1}^n{|x_k|}\\
+    \norm{x}_\infty & = max\{|x_k| : k = 1, 2, \dots, n\}
+\end{align*}
+}
+\subsection{Unit Vectors and Limits}
+\definition{In any norm, a vector $x \in V$ satisfying $\norm{x}=1$ is a \textbf{unit vector}. If $v \in V, v \neq 0$, then $x = \frac{v}{\norm{v}}$ is the \textbf{normalization} of $v$.}
+\definition{We say that a sequence (in $V = \mathbb{C}^n$ or $\R^n$),
+\begin{equation}
+    \{x^k\}_{k \geq 1} = ({x_1}^k, {x_2}^k, \dots, {x_n}^k)^T
+\end{equation}
+converges to
+\begin{equation}
+    x=(x_1, \dots, x_n)^T
+\end{equation}
+if
+\begin{equation}
+    \lim_{x \to \infty} \norm{x^k - x} = 0
+\end{equation}
+}
+\theorem{If a sequence ${x^k}_{k \geq 1}$ in $V$ converges to $x \in V$ in a norm, then it converges to $x$ in any other norm.}
+\theorem{A sequence ${x^k}$ in $V$ converges to $x \in V$ if and only if it converges \textbf{component wise}.}
+\subsection{Induced Matrix Norms}
+\definition{Given a vector norm $\norm{.}_a$ and a $m \times n$ matrix $A=[a_{ij}]$, the \textbf{induced norm} $\norm{A}_a$ is
+\begin{equation}
+    \norm{A}_a = \max_{\norm{x}_a=1}{\norm{Ax}_a} = \max_{x \neq 0}{\frac{\norm{Ax}_a}{\norm{x}_a}}
+\end{equation}
+}
+\example{Assume A has real entries. Then
+\begin{align*}
+    \norm{A}_2 & = \max_{\norm{x}_2 = 1}{\norm{Ax}_2} = \max_{x \neq 0}{\frac{\norm{Ax}_2}{\norm{x}_2}} = \sqrt{\lambda_{max}(A^{T}A)} \\
+    \norm{A}_1 & = \max_{\norm{x}_1 = 1}{\norm{Ax}_1} = \max_{x \neq 0}{\frac{\norm{Ax}_1}{\norm{x}_1}} = \max_{1 \leq j \leq n}{\sum_{i=1}^{m}{|a_{ij}|}} \\
+    \norm{A}_\infty & = \max_{\norm{x}_\infty = 1}{\norm{Ax}_\infty} = \max_{x \neq 0}{\frac{\norm{Ax}_\infty}{\norm{x}_\infty}} = \max_{1 \leq i \leq m}{\sum_{j=1}^{n}{|a_{ij}|}}
+\end{align*}
+}
+\subsubsection{Finding $x$ such that $\norm{Ax}=\norm{A}\norm{x}$}
+Assume that $A=[a_{ij}]$ is a $m \times n$ matrix with real entries.
+\theorem[For $\norm{A}_2$]{}
+\theorem[For $\norm{A}_1$]{}
+\theorem[For $\norm{A}_\infty$]{e}
+\subsubsection{Key Properties of Matrix Norms}
+\theorem{$\norm{AB} \leq \norm{A}\norm{B}$}
+\begin{proof}
+\begin{align*}
+    \norm{ABx} = \norm{A(Bx)} \leq \norm{A}\norm{Bx} \leq \norm{A}\norm{B}\norm{x} \\
+    max\frac{\norm{ABx}}{\norm{x}} \leq \norm{A}\norm{B} \\
+    \norm{AB} \leq \norm{A}\norm{B}
+\end{align*}
+\end{proof}
+
+\example{
+\begin{pmatrix}
+1 & -2 & 3\\
+-3 & 4 & 5
+\end{pmatrix}
+\begin{pmatrix}
+x_1 \\ x_2 \\ x_3
+\end{pmatrix}\\ \\
+a) Find $x \in \R^3$ such that $\norm{Ax}_1 = \norm{A}_1\norm{x}_1$ \\
+c) Find $\norm{A}_\infty$
+\begin{align*}
+    \norm{A}_\infty = 12
+\end{align*}
+
+}
+\end{document}
+
+\
